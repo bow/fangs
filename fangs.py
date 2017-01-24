@@ -1,7 +1,29 @@
-"""Utilities for Snakemake."""
+"""
+    fangs
+    ~~~~~
+
+    Opinionated utilities for Snakemake pipelines.
+
+
+    :copyright: (c) 2017 Wibowo Arindrarto <bow@bow.web.id>
+    :license: BSD
+
+"""
 
 from collections import namedtuple
 from os import path
+
+RELEASE = False
+
+__version_info__ = ("0", "1", "0")
+__version__ = ".".join(__version_info__)
+__version__ += "-dev" if not RELEASE else ""
+
+__author__ = "Wibowo Arindrarto"
+__contact__ = "bow@bow.web.id"
+__homepage__ = "https://github.com/bow/fangs"
+
+__all__ = ["Run", "Sample", "ReadGroup", "UnitName"]
 
 
 def getnattr(obj, idxs, fallback=None):
@@ -72,41 +94,14 @@ class Sample(object):
 
     @cachedproperty
     def read_groups(self):
+        """Read groups belonging to the sample."""
         return {rg_name: ReadGroup(self, rg_name, rg_config)
                 for rg_name, rg_config in self._raw["read_groups"].items()}
 
 
 class Run(object):
 
-    """Representation of a run-level configuration.
-
-    The input config must have the following layout:
-
-        {
-        "settings": {
-            "workdir": <path_to_output_dir>,
-        },
-        "samples": {
-            <sample_name>: {
-            "read_groups": {
-                <read_group_name>: {
-                "R1": <path_to_R1>,
-                "R2": <path_to_R2>
-                }
-            }
-            }
-        }
-        }
-
-    Notes:
-        * <sample_name> can be any string; it is the sample name.
-        * <read_group_name> can be any string; it is in practice the read group
-          name.
-        * <path_to_R1> and <path_to_R2> are *absolute* paths to each sequence
-          file.
-        * There must only be a single <read_group_name> for each sample.
-
-    """
+    """Representation of a run-level configuration."""
 
     def __init__(self, run_config, output_dir=None):
         # TODO: validation of incoming config
@@ -115,19 +110,36 @@ class Run(object):
 
     @cachedproperty
     def samples(self):
+        """Samples belonging to the run."""
         return {sample_name: Sample(self, sample_name, sample_config)
                 for sample_name, sample_config in self._raw["samples"].items()}
 
     @cachedproperty
     def unit_names(self):
+        """Tuples of (sample, read group) names."""
         return [UnitName(sample.name, rg.name)
                 for sample in self.samples.values()
                 for rg in sample.read_groups.values()]
 
     def get_workdir(self, default=None):
+        """Returns the working directory of the run
+
+        A default value can optionally be given if the ``settings.workdir`` key
+        is not defined in the config.
+
+        """
         return getnattr(self._raw, ["settings", "workdir"], default)
 
-    def make_input_func(self, rg_key, level):
+    def make_input_func(self, level, rg_key):
+        """Creates an input function for use in the ``input`` directive.
+
+        :param str rg_key: Key name of the config in the given level whose
+            value will be used.
+        :param level: Level of the config to retrieve the key name from.
+        :type level: ``Sample`` or ``ReadGroup`` class.
+        :returns: A function with Snakemake wildcards as the input.
+
+        """
         if level is Sample:
             return lambda wildcards: \
                 getnattr(self._raw,
@@ -142,6 +154,15 @@ class Run(object):
 
     def make_output_fname(self, fname, sample="{sample}",
                           read_group="{read_group}"):
+        """Creates a path of a file in the output directory.
+
+        :param str fname: Name of the file.
+        :param str sample: Value used for extrapolating the
+            '{sample}' specifier if present.
+        :param str read_group: Value used for extrapolating the
+            '{read_group}' specifier if present.
+
+        """
         if self.output_dir is None:
             raise ValueError("'output_dir' is not defined.")
         return path\
