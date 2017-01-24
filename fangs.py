@@ -1,11 +1,5 @@
-"""
-Utilities for Snakemake.
+"""Utilities for Snakemake."""
 
-
-This Snakefile requires a JSON/YAML file with the following layout as config:
-
-
-"""
 from collections import namedtuple
 from os import path
 
@@ -115,6 +109,7 @@ class Run(object):
     """
 
     def __init__(self, run_config, output_dir=None):
+        # TODO: validation of incoming config
         self._raw = run_config
         self.output_dir = output_dir
 
