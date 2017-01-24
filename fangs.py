@@ -132,13 +132,23 @@ class Run(object):
     def get_workdir(self, default=None):
         return getnattr(self._raw, ["settings", "workdir"], default)
 
-    def make_read_group_inputf(self, rg_key):
-        return lambda wildcards: \
-            getnattr(self._raw,
-                     ["samples", wildcards.sample, "read_groups",
-                      wildcards.read_group, rg_key])
+    def make_input_func(self, rg_key, level):
+        if level is Sample:
+            return lambda wildcards: \
+                getnattr(self._raw,
+                         ["samples", wildcards.sample, rg_key])
+        if level is ReadGroup:
+            return lambda wildcards: \
+                getnattr(self._raw,
+                         ["samples", wildcards.sample, "read_groups",
+                          wildcards.read_group, rg_key])
 
-    def make_output_fname(self, fname):
+        raise ValueError("Invalid 'level' value.")
+
+    def make_output_fname(self, fname, sample="{sample}",
+                          read_group="{read_group}"):
         if self.output_dir is None:
             raise ValueError("'output_dir' is not defined.")
-        return path.join(self.output_dir, fname)
+        return path\
+            .join(self.output_dir, fname)\
+            .format(sample=sample, read_group=read_group)
