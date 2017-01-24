@@ -1,6 +1,11 @@
 Fangs
 =====
 
+|ci|
+
+.. |ci| image:: https://travis-ci.org/bow/fangs.svg?branch=master
+    :target: https://travis-ci.org/bow/fangs
+
 Fangs is a collection of opinionated helper functions and classes for running
 a `Snakemake <https://snakemake.readthedocs.io/en/latest/>`_ pipeline. It imposes a certain way of structuring input
 information, with the goal making Snakefiles for next generation sequencing pipelines even more readable.
