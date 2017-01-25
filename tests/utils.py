@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Fangs test utilities"""
+"""Rattle test utilities"""
 
 from collections import namedtuple
 

@@ -1,6 +1,6 @@
 """
-    fangs
-    ~~~~~
+    rattle
+    ~~~~~~
 
     Opinionated utilities for Snakemake pipelines.
 
@@ -21,7 +21,7 @@ __version__ += "-dev" if not RELEASE else ""
 
 __author__ = "Wibowo Arindrarto"
 __contact__ = "bow@bow.web.id"
-__homepage__ = "https://github.com/bow/fangs"
+__homepage__ = "https://github.com/bow/rattle"
 
 __all__ = ["Run", "Sample", "ReadGroup", "UnitName"]
 

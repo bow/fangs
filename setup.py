@@ -3,7 +3,7 @@
 
 from setuptools import find_packages, setup
 
-from fangs import __author__, __contact__, \
+from rattle import __author__, __contact__, \
     __homepage__, __version__
 
 
@@ -18,7 +18,7 @@ with open("requirements-dev.txt") as src:
 
 
 setup(
-    name="Fangs",
+    name="Rattle",
     version=__version__,
     description="Opinionated utilities for Snakemake pipelines.",
     long_description=readme + "\n\n" + changelog,
@@ -32,7 +32,7 @@ setup(
     zip_safe=False,
     keywords="snakemake utilities ngs pipeline",
     tests_require=test_requirements,
-    py_modules=["fangs"],
+    py_modules=["rattle"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",

@@ -7,7 +7,7 @@ from .utils import SnakemakeFiles, make_exp_commands
 
 
 run_single_rg = SnakemakeFiles(
-    contents="""from fangs import Run, ReadGroup
+    contents="""from rattle import Run, ReadGroup
 
 RUN = Run(config, output_dir="results")
 
