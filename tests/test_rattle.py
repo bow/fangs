@@ -13,16 +13,16 @@ RUN = Run(config, output_dir="results")
 
 rule all:
     input:
-        [RUN.make_output_fname(
+        [RUN.output(
             "output-{sample}-{read_group}.txt",
-            sample=unit_name.sample, read_group=unit_name.read_group)
+            sample=unit_name.sample, read_group=unit_name.read_group, fmt=True)
         for unit_name in RUN.unit_names]
 
 rule test:
     input:
-        r1=RUN.make_input_func(ReadGroup, "r1"),
+        r1=RUN.config_input_func(ReadGroup, "r1"),
     output:
-        r1=RUN.make_output_fname("output-{sample}-{read_group}.txt"),
+        r1=RUN.output("output-{sample}-{read_group}.txt", fmt=True),
     shell:
         "some_exe -i {input.r1} -o {output.r1}"
     """,

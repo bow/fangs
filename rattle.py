@@ -13,6 +13,8 @@
 from collections import namedtuple
 from os import path
 
+from snakemake.io import expand
+
 RELEASE = False
 
 __version_info__ = ("0", "1", "0")
@@ -77,9 +79,11 @@ class ReadGroup(object):
 
     """Representation of a read group-level configuration."""
 
-    def __init__(self, sample, rg_name, rg_config):
+    def __init__(self, sample, rg_name, rg_config,
+                 output_dir="{sample_group}"):
         self.sample = sample
         self.name = rg_name
+        self.output_dir = output_dir
         self._raw = rg_config
 
 
@@ -106,7 +110,7 @@ class Run(object):
     def __init__(self, run_config, output_dir=None):
         # TODO: validation of incoming config
         self._raw = run_config
-        self.output_dir = output_dir
+        self.output_dir = output_dir or run_config.get("output_dir", None)
 
     @cachedproperty
     def samples(self):
@@ -130,7 +134,7 @@ class Run(object):
         """
         return getnattr(self._raw, ["settings", "workdir"], default)
 
-    def make_input_func(self, level, rg_key):
+    def config_input_func(self, level, rg_key):
         """Creates an input function for use in the ``input`` directive.
 
         :param str rg_key: Key name of the config in the given level whose
@@ -140,20 +144,35 @@ class Run(object):
         :returns: A function with Snakemake wildcards as the input.
 
         """
-        if level is Sample:
-            return lambda wildcards: \
-                getnattr(self._raw,
-                         ["samples", wildcards.sample, rg_key])
-        if level is ReadGroup:
-            return lambda wildcards: \
-                getnattr(self._raw,
-                         ["samples", wildcards.sample, "read_groups",
-                          wildcards.read_group, rg_key])
+        if level is not Sample and level is not ReadGroup:
+            raise ValueError("Invalid 'level' value.")
 
-        raise ValueError("Invalid 'level' value.")
+        def func(wildcards):
+            rgv = rg_key
 
-    def make_output_fname(self, fname, sample="{sample}",
-                          read_group="{read_group}"):
+            if rg_key.startswith("{") and rg_key.endswith("}"):
+                rgv = getattr(wildcards, rg_key[1:-1])
+
+            if level is Sample:
+                return getnattr(self._raw,
+                                ["samples", wildcards.sample, rgv])
+
+            elif level is ReadGroup:
+                return getnattr(self._raw,
+                                ["samples", wildcards.sample, "read_groups",
+                                 wildcards.read_group, rgv])
+
+        return func
+
+    def rg_gather_func(self, pattern, **kwargs):
+        return lambda wildcards: \
+            expand(pattern,
+                   sample=wildcards.sample,
+                   read_group=self.samples[wildcards.sample].read_groups,
+                   **kwargs)
+
+    def output(self, fname, fmt=False, sample="{sample}",
+               read_group="{read_group}", **kwargs):
         """Creates a path of a file in the output directory.
 
         :param str fname: Name of the file.
@@ -165,6 +184,7 @@ class Run(object):
         """
         if self.output_dir is None:
             raise ValueError("'output_dir' is not defined.")
-        return path\
-            .join(self.output_dir, fname)\
-            .format(sample=sample, read_group=read_group)
+        p = path.join(self.output_dir, fname)
+        if fmt:
+            return p.format(sample=sample, read_group=read_group, **kwargs)
+        return p
