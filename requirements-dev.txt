@@ -13,7 +13,7 @@ pytest-flake8==0.8.1
 pytest-pipeline==0.3.0
 pyyaml==3.12
 six==1.10.0
-snakemake==3.10.0
+snakemake==3.11.2
 tox==2.5.0
 virtualenv==15.1.0
-wrapt==1.10.8
+wrapt==1.10.10
