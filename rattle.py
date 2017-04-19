@@ -10,7 +10,7 @@
 
 """
 
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from os import path
 
 from snakemake.io import expand
@@ -99,8 +99,10 @@ class Sample(object):
     @cachedproperty
     def read_groups(self):
         """Read groups belonging to the sample."""
-        return {rg_name: ReadGroup(self, rg_name, rg_config)
-                for rg_name, rg_config in self._raw["read_groups"].items()}
+        return OrderedDict(
+            [(rg_name, ReadGroup(self, rg_name, rg_config))
+             for rg_name, rg_config in
+             sorted(self._raw["read_groups"].items(), key=lambda k: k[0])])
 
 
 class Run(object):
@@ -115,8 +117,10 @@ class Run(object):
     @cachedproperty
     def samples(self):
         """Samples belonging to the run."""
-        return {sample_name: Sample(self, sample_name, sample_config)
-                for sample_name, sample_config in self._raw["samples"].items()}
+        return OrderedDict(
+            [(sample_name, Sample(self, sample_name, sample_config))
+             for sample_name, sample_config in
+             sorted(self._raw["samples"].items(), key=lambda k: k[0])])
 
     @cachedproperty
     def unit_names(self):
