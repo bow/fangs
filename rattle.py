@@ -112,7 +112,8 @@ class Run(object):
     def __init__(self, run_config, output_dir=None):
         # TODO: validation of incoming config
         self._raw = run_config
-        self.output_dir = output_dir or run_config.get("output_dir", None)
+        self.settings = run_config.get("settings", {})
+        self.output_dir = output_dir or self.settings.get("output_dir", None)
 
     @cachedproperty
     def samples(self):
