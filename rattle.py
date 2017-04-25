@@ -130,6 +130,11 @@ class Run(object):
                 for sample in self.samples.values()
                 for rg in sample.read_groups.values()]
 
+    def set_default_setting(self, key, value):
+        """Sets the given setting key if it has not yet been set."""
+        if self.settings.get(key) is None:
+            self.settings[key] = value
+
     def get_workdir(self, default=None):
         """Returns the working directory of the run
 
